@@ -271,7 +271,7 @@ for (frame in 0:(NFRAMES-1)) {
 max(abs(boing@left))  # 26.363
 sonido=sonido[1:TOTALSAMPLES]
 max(sonido)  # 24.093
-boing@left=sonido
+boing@left=as.numeric(sonido)
 writeWave(boing, filename="bouncingballaudiotrack.wav")
 
 
