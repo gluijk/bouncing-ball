@@ -224,7 +224,7 @@ for (frame in 0:(NFRAMES-1)) {
     # Draw ball
     img=DrawCircle(img, xp+OFFX, yp+OFFY, R, fill=TRUE, val=0.25)
     
-    # Draw rectangle
+    # Draw square
     for (i in 1:4) {
         img=DrawLine(img, xsquare[i]+OFFX, ysquare[i]+OFFY,
             xsquare[ifelse(i==4,1,i+1)]+OFFX, ysquare[ifelse(i==4,1,i+1)]+OFFY,
@@ -252,7 +252,7 @@ for (frame in 0:(NFRAMES-1)) {
     xp=updateball[1]
     yp=updateball[2]
     
-    # Update rectangle rotation
+    # Update square rotation
     for (i in 1:4) {
         updatesquare=rotate_point(xsquareini[i], ysquareini[i], dtheta*(frame+1))
         xsquare[i]=updatesquare[1]
