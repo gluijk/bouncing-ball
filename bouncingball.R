@@ -236,10 +236,10 @@ for (frame in 0:(NFRAMES-1)) {
     collisioncount=collisioncount+1
     for (i in 1:4) {
         dist=distance_to_line(xp, yp, xsquare[i], ysquare[i],
-                              xsquare[ifelse(i==4,1,i+1)], ysquare[ifelse(i==4,1,i+1)])
+                xsquare[ifelse(i==4,1,i+1)], ysquare[ifelse(i==4,1,i+1)])
         if (dist <= R & collisioncount>=COLLISIONDELAY) {
             phi=specular_bounce(phi, xsquare[i], ysquare[i],
-                                xsquare[ifelse(i==4,1,i+1)], ysquare[ifelse(i==4,1,i+1)])
+                xsquare[ifelse(i==4,1,i+1)], ysquare[ifelse(i==4,1,i+1)])
             INIAUDIO=round(TOTALSAMPLES-1)/NFRAMES*frame+1
             sonido[INIAUDIO:(INIAUDIO+LENAUDIO-1)]=
                 sonido[INIAUDIO:(INIAUDIO+LENAUDIO-1)]+boing@left
@@ -254,7 +254,8 @@ for (frame in 0:(NFRAMES-1)) {
     
     # Update square rotation
     for (i in 1:4) {
-        updatesquare=rotate_point(xsquareini[i], ysquareini[i], dtheta*(frame+1))
+        updatesquare=rotate_point(xsquareini[i], ysquareini[i],
+                                  dtheta*(frame+1))
         xsquare[i]=updatesquare[1]
         ysquare[i]=updatesquare[2]
     }   
