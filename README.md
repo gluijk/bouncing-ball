@@ -1,2 +1,2 @@
 # bouncing-ball
-Bouncing ball into a rotating square using ChatGPT code the trigonometry
+Bouncing ball into a rotating square using ChatGPT to code the trigonometry
