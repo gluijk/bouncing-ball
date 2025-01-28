@@ -35,14 +35,6 @@ DrawLine = function(img, x0, y0, x1, y1, inc=TRUE, val=1) {
     return(img)
 }
 
-DrawPoint = function(img, x0, y0, inc=TRUE, val=1) {
-    # Dibuja punto en (x0,y0)
-    # Por defecto método no destructivo y con valor=1
-    img=DrawLine(img, x0, y0, x0, y0, inc, val)
-    
-    return(img)
-}
-
 DrawEllip = function(img, x0, y0, a, b, inc=TRUE, val=1, fill=FALSE, thick=1) {
     # Dibuja elipse de centro (x0,y0) y radios a y b
     # Por defecto método no destructivo, con valor=1 y sin relleno
@@ -69,16 +61,6 @@ DrawCircle = function(img, x0, y0, r, inc=TRUE, val=1, fill=FALSE, thick=1) {
     return(img)
 }
 
-LoadBitmap = function(name, chan=2) {
-    # Lee bitmap en formato PNG
-    # Si no es monocromo se carga el canal chan (por defecto G)
-    require(png)
-    img=readPNG(name)
-    if (length(dim(img))>2) img=img[,,chan]
-    
-    return(t(img[nrow(img):1,]))
-}
-
 SaveBitmap = function(img, name, trunc=TRUE, gamma=1) {
     # Guarda bitmap en formato PNG
     # Solo si trunc=FALSE y la imagen excede de 1 se reescala a 1
@@ -94,7 +76,7 @@ SaveBitmap = function(img, name, trunc=TRUE, gamma=1) {
 
 update_position <- function(xp, yp, phi, D) {
     # ChatGPT prompt:
-    # "write a R function that updates the position of a particle
+    # "write an R function that updates the position of a particle
     # located at (xp,yp) moving in the direction phi, travelling
     # a distance of D"
     
@@ -107,7 +89,7 @@ update_position <- function(xp, yp, phi, D) {
 
 rotate_point <- function(xp, yp, theta) {
     # ChatGPT prompt:
-    # "write a R function that calculates the rotation of a point (xp,yp)
+    # "write an R function that calculates the rotation of a point (xp,yp)
     # around the origin (0,0) by an amount of theta radians"
     
     # Calculate the rotated coordinates
@@ -119,7 +101,7 @@ rotate_point <- function(xp, yp, theta) {
 
 distance_to_line <- function(xp, yp, x0, y0, x1, y1) {
     # ChatGPT prompt:
-    # "write a R function that calculates the distance between
+    # "write an R function that calculates the distance between
     # a point (xp,yp) and the line defined by points (x0,y0) and (x1,y1)"
     
     # Calculate the coefficients of the line equation: Ax + By + C = 0
@@ -135,7 +117,7 @@ distance_to_line <- function(xp, yp, x0, y0, x1, y1) {
 
 specular_bounce_WRONG <- function(phi, x0, y0, x1, y1) {
     # ChatGPT prompt
-    # "write a R function that calculates the new moving direction
+    # "write an R function that calculates the new moving direction
     # of a particle currently moving in the direction defined by phi radians,
     # after a collision with a line defined by points (x0,y0) and (x1,y1)
     # assuming a specular bounce on the line"
@@ -157,7 +139,7 @@ specular_bounce_WRONG <- function(phi, x0, y0, x1, y1) {
 
 specular_bounce <- function(phi, x0, y0, x1, y1) {
     # ChatGPT prompt
-    # "write a R function that calculates the new moving direction
+    # "write an R function that calculates the new moving direction
     # of a particle currently moving in the direction defined by phi radians,
     # after a collision with a line defined by points (x0,y0) and (x1,y1)
     # assuming a specular bounce on the line"
@@ -182,14 +164,15 @@ DIMY=512
 DIMX=512
 OFFY=DIMY/2
 OFFX=DIMX/2
+NFRAMES=360*8
 
 # Ball definition:
 R=10  # radius of ball
 xp=0  # starting position of ball
 yp=0
 phi=pi/4  # starting direction of ball
-D=3  # ball position increase after each iteration
-COLLISIONDELAY=10
+D=3  # ball position increase after each iteration (D < 2*R)
+COLLISIONDELAY=5
 
 # Square definition:
 L=200  # length of square sides
@@ -204,19 +187,18 @@ dtheta=2*pi/360/8  # square theta increase after each iteration
 library(tuneR)
 
 boing=readWave("boing.wav")
-play(boing)
+# play(boing)
 boing
+
 LENAUDIO=length(boing@left)
 fps=24
 fs=boing@samp.rate
 bits=boing@bit
 TOTALSAMPLES=fs*NFRAMES/fps
-sonido=array(0, TOTALSAMPLES)
-
+audiotrack=numeric(TOTALSAMPLES)
 
 # Build frames
-NFRAMES=360*8
-collisioncount=0
+collisioncount=COLLISIONDELAY
 for (frame in 0:(NFRAMES-1)) {
     # New empty frame
     img=NewBitmap(DIMY, DIMY)
@@ -237,12 +219,15 @@ for (frame in 0:(NFRAMES-1)) {
     for (i in 1:4) {
         dist=distance_to_line(xp, yp, xsquare[i], ysquare[i],
                 xsquare[ifelse(i==4,1,i+1)], ysquare[ifelse(i==4,1,i+1)])
-        if (dist <= R & collisioncount>=COLLISIONDELAY) {
+        if (dist < R & collisioncount>=COLLISIONDELAY) {
             phi=specular_bounce(phi, xsquare[i], ysquare[i],
                 xsquare[ifelse(i==4,1,i+1)], ysquare[ifelse(i==4,1,i+1)])
-            INIAUDIO=round(TOTALSAMPLES-1)/NFRAMES*frame+1
-            sonido[INIAUDIO:(INIAUDIO+LENAUDIO-1)]=
-                sonido[INIAUDIO:(INIAUDIO+LENAUDIO-1)]+boing@left
+            
+            # Add sound
+            INIAUDIO=round((TOTALSAMPLES-1)/NFRAMES*frame+1)
+            FINAUDIO=min((INIAUDIO+LENAUDIO-1), TOTALSAMPLES)
+            audiotrack[INIAUDIO:FINAUDIO]=audiotrack[INIAUDIO:FINAUDIO]+
+                boing@left[1:(FINAUDIO-INIAUDIO+1)]
             collisioncount=0
         }
     }
@@ -269,10 +254,9 @@ for (frame in 0:(NFRAMES-1)) {
 }
 
 # Save soundtrack
-max(abs(boing@left))  # 26.363
-sonido=sonido[1:TOTALSAMPLES]
-max(sonido)  # 24.093
-boing@left=as.numeric(sonido)
+audiotrack[audiotrack >  32767] = 32767  # clip audio saturation
+audiotrack[audiotrack < -32768] =-32768
+boing@left=audiotrack
 writeWave(boing, filename="bouncingballaudiotrack.wav")
 
 
