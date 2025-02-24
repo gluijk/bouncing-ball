@@ -1,6 +1,6 @@
 # Bouncing ball LLM torture test
 # www.overfitting.net
-# https://www.overfitting.net/
+# https://www.overfitting.net/2025/02/bouncing-ball-con-el-becario-motivado.html
 
 
 library(png)
